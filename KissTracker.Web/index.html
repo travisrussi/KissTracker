@@ -1,0 +1,324 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" dir="ltr" lang="en-US" xml:lang="en">
+<head>
+	<script type="text/javascript">
+		var renderTimeStart; // = [RenderTimeStartJs]; //(optional) set this placeholder when the page starts rendering on the server to measure server rendering time
+		var renderTimeEnd; // = [RenderTimeEndJs]; //(optional) set this placeholder when the page finishes rendering on the server to measure server rendering time
+		var loadStartTime = (new Date()).getTime(); //(optional) measures page load time
+	</script>
+
+	<link rel="stylesheet" href="http://twitter.github.com/bootstrap/1.4.0/bootstrap.min.css">
+</head>
+<body>
+	<div class="container">
+		<h1>KissTracker - Quick & Dirty Client-Side Tracking</h1>
+
+		<br>
+
+		<section id="forms">
+		  <div class="row">
+		    <div class="span4">
+		    	<h2>Overview</h2>
+		    	<p>What is KissTracker, why did I build it and who the hell am I.</p>
+		    </div>
+		    <div class="span12">
+		    	<h3>What is KissTracker</h3>
+		    	<p>KissTracker is a client-side tracking component that captures user interactions via javascript.</o>
+		    	<p>The events are captured via javascript, submitted via AJAX GET to a .NET REST API and logged to a mongodb data store.</p>
+		    	<p>This project is hosted on GitHub: <a href="https://github.com/travisrussi/KissTracker">https://github.com/travisrussi/KissTracker</a></p>
+		    	<br>
+
+		    	<h3>Why Did I Build It</h3>
+		    	<p>KissTracker provides similar functionality to that of <a href="http://www.clicktale.com">ClickTale</a>, <a href="http://www.getclicky.com">GetClicky</a>, <a href="http://www.mouseflow.com">MouseFlow</a> and <a href="http://www.kissmetrics.com">KissMetrics</a> (no relation to them).</p>
+				<p>However, no existing client-tracking service/product (that I could find) would give me per-user metrics, which I needed for a project I was working on. So I rolled my own.</p>
+				<p>Most of my experience is in back-end development, so this was a good real-world opportunity to improve my front-end development chops. It's definitely not the most graceful javascript, but it serves its purpose.</p>
+				<br>
+
+				<h3>Who Am I</h3>
+				<p>My name is Travis Russi. I'm a hacker, a hustler, an entrepreneur, a husband, a father and an adventurer. I'm working to crush it in the business productivity software market.</p>
+				<p>I've climbed El Capitan, trekked in Nepal, lived in a van down by the river in Europe and I've tried the sailing thing.</p>
+				<p>I love solving problems and helping others. What can I help you achieve today?</p>
+				<p>Website: <a href="http://www.travisdoes.com">http://www.travisdoes.com</a></p>
+				<p>LinkedIn Profile: <a href="http://www.linkedin.com/in/travisrussi">http://www.linkedin.com/in/travisrussi</a></p>
+		    </div>
+		  </div>
+
+		  <br>
+
+		  <div class="row">
+			<div class="span4">
+			  <h2>Implementation</h2>
+			  <p>The implementation of KissTracker includes a javascript file and a REST API.</p>
+			  <p>The javascript file uses the jQuery framework and several jQuery plug-ins (included in the javascript file).</p>
+			  <p>The REST API is written in C# using WCF.</p>
+			</div>
+			<div class="span12">
+			  <h3>Overview</h3>
+			  <p>There are two main components to implementing KissTracker:</p>
+			  <ul>
+			    <li>A javascript file</li>
+			    <li>A REST API</li>
+			  </ul>
+			  <p>The javascript captures the following client-side events:</p>
+			  <ul>
+				<li>Client-Side Page Load Time (via Ready)</li>
+				<li>Server-Side Render Time</li>
+				<li>Transfer Time</li>
+				<li>Mouse Hover (via HoverIntent)</li>
+				<li>Mouse Click (via Click)</li>
+				<li>Link Click (via Click)</li>
+				<li>Scroll Depth (as percentage in 10% increments via Scroll)</li>
+				<li>Form Fields (captures data in input,select,textarea elements via Change)</li>
+				<li>Form Interaction (via Focus, Blur, Submit)</li>
+				<li>View Time (via OnBeforeUnload)</li>
+			  </ul>
+			  <p>The REST API is built using .NET.  However, implementing it in another language is pretty trivial.</p>
+			  <p>I am using mongodb for the data store because client-side tracking usually generates a lot of data and NoSQL is a great solution to log this type of data.</p>
+			  <br>
+			  <h3>Javascript</h3>
+			  <p>Add this snippent of javascript to the bottom of your HTML document, just above the closing <code>&lt;body&gt;</code> tag:</p>
+			  <pre>
+&lt;script type=&quot;text/javascript&quot;&gt;
+
+	var trackingSessionId = &quot;[SessionId]&quot;;
+	//(required) set this placeholder server-side to confirm identity of ajax request
+
+	var trackingApiUrl = &quot;//yoursite.com/KissTracker/&quot;;
+	//(optional) set the api url here, or hard-code it in the kissTracker.js file
+
+	//loads jQuery if it hasn't already been loaded
+	window.jQuery || document.write(&#39;&lt;script src=&quot;//ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js&quot;&gt;&lt;\/script&gt;&#39;)
+
+	function _loadTracker(u) {
+		setTimeout(function () {
+			var s = document.createElement(&#39;script&#39;);
+			var f = document.getElementsByTagName(&#39;script&#39;)[0];
+			s.type = &#39;text/javascript&#39;;
+			s.async = true;
+			s.src = u;
+			f.parentNode.insertBefore(s, f);
+		}, 1);
+	}
+	_loadTracker(&#39;//yoursite.com/js/kisstracker.js&#39;);
+
+&lt;/script&gt;</pre>
+			  <br>
+			  <p>Optionally, you can add this snippet to the top of the <code>&lt;head&gt;</code> tag to track client-side load and server-side render times:</p>
+			  <pre>
+&lt;script type=&quot;text/javascript&quot;&gt;
+
+	var renderTimeStart = [RenderTimeStartJs];
+	//(optional) set this placeholder when the page starts rendering on the server to measure server rendering time
+
+	var renderTimeEnd = [RenderTimeEndJs];
+	//(optional) set this placeholder when the page finishes rendering on the server to measure server rendering time
+
+	var loadStartTime = (new Date()).getTime();
+	//(optional) measures page load time
+
+&lt;/script&gt;</pre>
+			  <h3>REST API</h3>
+			  <p>The request sent to the API from javascript is a GET request to a URL with these query string parameters:</p>
+			  <pre>
+http://yoursite.com/KissTracker/TrackEvent?sessionId=[SessionId]&jsonString=[JsonString]</pre>
+			  <p>The <code>jsonString</code> is base64 encoded.  The format of the decoded jsonString is an array of events (delimited by '|') in this format:</p>
+			  <pre>
+t:[timeElapsedInMilliseconds];a:[EventAction];e:[ElementType];l:[ElementName];c:[CtaName];p:[PositionX]-[PositionY];v:[ElementValue]</pre>
+			  <p>If you look at the source code, you'll see the Regex I use to parse the jsonString array.  I use a list of <code>TrackEvent</code> objects to store each event</p>
+			  <h3>MongoDB</h3>
+			  <p>The mongodb data store is in the KissTracker.Data folder. I included a <code>startmongo.bat</code> script to start mongodb and set the data store the correct folder.</p>
+			  <p>For the purposes of this demo, I store the data in the following mongodb collections:</p>
+			  <ul>
+				  <li>VisitorSession</li>
+				  <li>VisitorSessionPage</li>
+				  <li>VisitorSessionPageEvent</li>
+				  <li>VisitorSessionPageEventClick</li>
+				  <li>VisitorSessionPageEventDataEntry</li>
+				  <li>VisitorSessionPageEventError</li>
+				  <li>VisitorSessionPageEventMessage</li>
+				  <li>VisitorSessionPageEventScroll</li>
+			  </ul>
+			  <p>These collections are a subset of a more comprehensive visitor logging implementation, but they capture all of the data sent from the client-side javascript.</p>
+			</div>
+		  </div>
+		  <br>
+		  <br>
+
+ 		  <div class="row">
+			<div class="span4">
+			  <h2>Data Entry</h2>
+			  <p>All data entered into the form will be submitted via KissTracker.</p>
+			  <p>The only data not sent is protected data (i.e. passwords).</p>
+			  <p>The data is queued up and sent in batches of 2,000 bytes (by default).</p>
+			</div>
+			<div class="span12">
+			  <h3>Test Form</h3>
+			  <p>Enter data into this form while monitoring the AJAX requests sent from the client to see how KissTracker functions from the client-side.</p>
+			  <p>Set a breakpoint on the <code>TrackEvent</code> method in your REST API, then enter data into this form to monitor the server-side behavior of KissTracker.</p>
+			  <form>
+				<fieldset>
+				  <div class="clearfix">
+					<label for="xlInput">Input</label>
+					<div class="input">
+					  <input class="xlarge" id="xlInput" name="xlInput" size="30" type="text">
+					</div>
+				  </div><!-- /clearfix -->
+				  <div class="clearfix">
+					<label for="textarea">Textarea</label>
+					<div class="input">
+					  <textarea class="xxlarge" id="textarea2" name="textarea2" rows="3"></textarea>
+					</div>
+				  </div><!-- /clearfix -->
+				  <div class="clearfix">
+					<label for="textarea">Password</label>
+					<div class="input">
+					  <input class="xlarge" id="password" name="password" type="password">
+					  <span class="help-block">
+						Passwords are not sent.
+					  </span>
+					</div>
+				  </div><!-- /clearfix -->
+				  <div class="clearfix">
+					<label for="normalSelect">Select</label>
+					<div class="input">
+					  <select name="normalSelect" id="normalSelect">
+						<option>1</option>
+						<option>2</option>
+						<option>3</option>
+						<option>4</option>
+						<option>5</option>
+					  </select>
+					</div>
+				  </div><!-- /clearfix -->
+				  <div class="clearfix">
+					<label for="multiSelect">Multiple select</label>
+					<div class="input">
+					  <select class="medium" size="5" multiple="multiple" name="multiSelect" id="multiSelect">
+						<option>1</option>
+						<option>2</option>
+						<option>3</option>
+						<option>4</option>
+						<option>5</option>
+					  </select>
+					</div>
+				  </div><!-- /clearfix -->
+				  <div class="clearfix">
+					<label id="optionsCheckboxes">List of checkboxes</label>
+					<div class="input">
+					  <ul class="inputs-list">
+						<li>
+						  <label>
+							<input type="checkbox" name="optionsCheckboxes" value="option1">
+							<span>Option one is this and that—be sure to include why it’s great</span>
+						  </label>
+						</li>
+						<li>
+						  <label>
+							<input type="checkbox" name="optionsCheckboxes" value="option2">
+							<span>Option two can also be checked and included in form results</span>
+						  </label>
+						</li>
+						<li>
+						  <label>
+							<input type="checkbox" name="optionsCheckboxes" value="option2">
+							<span>Option three can—yes, you guessed it—also be checked and included in form results. Let's make it super long so that everyone can see how it wraps, too.</span>
+						  </label>
+						</li>
+						<li>
+						  <label class="disabled">
+							<input type="checkbox" name="optionsCheckboxes" value="option2" disabled="">
+							<span>Option four cannot be checked as it is disabled.</span>
+						  </label>
+						</li>
+					  </ul>
+
+					</div>
+				  </div><!-- /clearfix -->
+				  <div class="clearfix">
+					<label id="optionsRadio">List of radio buttons</label>
+					<div class="input">
+					  <ul class="inputs-list">
+						<li>
+						  <label>
+							<input type="radio" checked="" name="optionsRadios" value="option1">
+							<span>Option one is this and that—be sure to include why it’s great</span>
+						  </label>
+						</li>
+						<li>
+						  <label>
+							<input type="radio" name="optionsRadios" value="option2">
+							<span>Option two can is something else and selecting it will deselect options 1</span>
+						  </label>
+						</li>
+					  </ul>
+					</div>
+				  </div><!-- /clearfix -->
+				</fieldset>
+			  </form>
+			</div>
+		  </div><!-- /row -->
+
+		  <br>
+		  <br>
+
+		  <div class="row">
+			<div class="span4">
+			  <h2>Clicks</h2>
+			  <p>All clicks are captured by KissTracker including clicks on the document itself (i.e. not clicking a link or button).</p>
+			  <p>Clicks force the data to be submitted to KissTracker immediately (i.e. no queuing).</p>
+			</div>
+			<div class="span12">
+			  <h3>Test Clicks</h3>
+			  <p>Click these links (or anywhere on the page) to see how KissTracker captures clicks.</p>
+			  <form>
+				  <div class="well" style="padding: 14px 19px;">
+				  	<div class="input">
+						<button class="btn primary">Button</button>&nbsp;&nbsp;<a href="#" class="btn primary">Link</a>
+					</div>
+				  </div>
+			  </form>
+			</div>
+		  </div><!-- /row -->
+
+		  <br>
+		  <br>
+
+		  <div class="row">
+			<div class="span4">
+			  <h2>Scrolling</h2>
+			  <p>Any scrolling action is captured by KissTracker.</p>
+			  <p>The scroll depth is captured in 10% increments and the direction is also captured.</p>
+			</div>
+			<div class="span12">
+			  <h3>Test Scroll Depth</h3>
+			  <p>If you scroll down this far, you should get some scrolling event data.</p>
+			</div>
+		  </div>
+
+		  <br>
+		  <br>
+
+		</section>
+	</div>
+
+	<script type="text/javascript">
+		var trackingSessionId = "1234"; //(required) set this placeholder server-side to confirm identity of ajax request
+		var trackingApiUrl = "//kissgen.com/KissTracker/"; //(optional) set the api url here, or hard-code it in the kissTracker.js file
+        window.jQuery || document.write('<script src="//ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"><\/script>')
+        function _loadTracker(u) {
+            setTimeout(function () {
+                var s = document.createElement('script');
+                var f = document.getElementsByTagName('script')[0];
+                s.type = 'text/javascript';
+                s.async = true;
+                s.src = u;
+                f.parentNode.insertBefore(s, f);
+            }, 1);
+        }
+        _loadTracker('//kissgen.com/js/kissTracker.js');
+    </script>
+
+
+</body>
+</html>
