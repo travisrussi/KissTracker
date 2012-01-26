@@ -320,7 +320,7 @@ $(document).ready(function () {
     });
 
     //Mouse Click (via Click)
-    $(document).bind('click', function (e) {
+    $(document).live('click', function (e) {
         $(e.toElement).captureNewEvent({
             eventType: "mouseclick",
             positionX: e.pageX,
@@ -330,14 +330,14 @@ $(document).ready(function () {
     });
 
     //Link Click (via Click)
-    $("a").bind('click', function () {
+    $("a").live('click', function () {
         $(this).captureNewEvent({
             eventType: "linkclick"
         });
     });
 
     //Scroll Depth (as percentage in 10% increments via Scroll)
-    $(document).scroll(function () {
+    $(document).live('scroll', function () {
         var $w = $(this),
 			scroll_top = $w.scrollTop(),
 			total_height = $w.height(),
@@ -403,17 +403,17 @@ $(document).ready(function () {
     var keyPressHasHappened = false;
 
     $('input:not(:password,[readonly],:hidden,.protected),select,textarea')
-        .bind('keydown', function () {
+        .live('keydown', function () {
             keyPressHasHappened = true;
         })
-        .change(function () {
+        .live('change', function () {
             if (keyPressHasHappened) {
                 $(this).captureNewEvent({
                     eventType: "textchange"
                 });
             }
         })
-		.blur(function () {
+		.live('blur', function () {
 			$(this).captureNewEvent({
 				eventType: "blur"
 			});
@@ -426,7 +426,7 @@ $(document).ready(function () {
             forceSend: true
         });
     });
-    $("input[type='submit']").bind('click', function () {
+    $("input[type='submit']").live('click', function () {
         $(this).captureNewEvent({
             eventType: "submit",
             forceSend: true
